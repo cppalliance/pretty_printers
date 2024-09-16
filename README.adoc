@@ -1,0 +1,25 @@
+= Pretty_printers
+:toc: preamble
+
+____
+A collection of helpers for convenient use of GDB pretty printers with
+accompanying build system modules.
+____
+
+
+== Install
+
+== Usage
+
+=== boost-pretty-printers.jam
+
+=== FindBoostPrettyPrinters.cmake
+
+=== Direct usage
+
+==== generate-gdb-header.py
+
+==== generate-gdb-test-runner.py
+
+== License
+link:LICENSE_1_0.txt[BSL-1.0]

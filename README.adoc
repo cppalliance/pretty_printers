@@ -1,4 +1,4 @@
-= Pretty_printers
+= BoostPrettyPrinters
 :toc: preamble
 
 ____
@@ -6,20 +6,262 @@ A collection of helpers for convenient use of GDB pretty printers with
 accompanying build system modules.
 ____
 
+WARNING: Not an official Boost tool yet!
+
+The core of this project is a couple of utility Python scripts.
+
+* <<generate-gdb-header-py>> takes a Python module that defines a set of GDB
+  pretty printers and creates a C header that pushes the contents of that
+  script into a special binary section, so that GDB could automatically load
+  those pretty printers during debugging.
+
+* <<generate-gdb-test-runner-py>> takes a source file that has special comment
+  lines and creates a Python program that sets breakpoints on those lines to
+  check if printed expressions produce the desired output.
+
 
 == Install
 
+You can just clone or download the sources.
+
 == Usage
 
-=== boost-pretty-printers.jam
+For convenience of using the provided tools the project also provides a CMake
+module and a b2 module. For direct usage consult the <<api-direct>> subsection
+in the API section.
 
-=== FindBoostPrettyPrinters.cmake
+=== CMake
 
+```cmake
+# CMakeLists.txt
+find_package(BoostPrettyPrinters)
+if(BoostPrettyPrinters_FOUND)
+    boost_pretty_printers_gdb_python_header(
+        TARGET regenerate_printers
+        INPUT gdb_printers.py
+        OUTPUT include/myproject/gdb_printers.hpp
+        EXCLUDE_FROM_ALL)
+endif()
+
+# test/CMakeLists.txt
+if(BoostPrettyPrinters_HAS_GDB)
+    boost_pretty_printers_test_gdb_printers(
+        TEST test_gdb_printers
+        SOURCES printers.cpp
+        EXCLUDE_FROM_ALL)
+    target_link_libraries(test_gdb_printers PRIVATE myproject)
+endif()
+```
+
+Note: In order for `find_package` to find the provided CMake module you
+need to append the installation directory of PrettyPrinters to
+`CMAKE_MODULE_PATH` variable. This is normally done either from the command
+line or via presets. For example:
+
+```sh
+cmake -S.. -B. -DCMAKE_MODULE_PATH=path/to/pretty_printers
+```
+
+=== b2
+
+```jam
+# build.jam
+using boost-pretty-printers ;
+
+import boost-pretty-printers ;
+boost-pretty-printers.gdb-python-header gdb_printers.hpp
+    : gdb_printers.py
+    : <location>include/mymproject
+    ;
+always gdb_printers.hpp ;
+alias regenerate-printers : gdb_printers.hpp ;
+explicit regenerate-printers gdb_printers.hpp ;
+
+# test/build.jam
+import boost-pretty-printers ;
+boost-pretty-printers.test-gdb-printers gdb-printers
+    : printers.cpp
+      ..//myproject
+    ;
+explicit gdb-printers ;
+```
+
+== API
+
+=== CMake module
+
+```
+find_package(BoostPrettyPrinters [QUIET])
+```
+
+==== Variables
+This module will set the following variables in your project:.
+
+BoostPrettyPrinters_FOUND:: True if both the module and a Python 3 Interpreter
+    were found.
+
+BoostPrettyPrinters_HAS_GDB:: True if GDB executable was found.
+
+BoostPrettyPrinters_GDB:: The GDB executable to use.
+
+==== Functions
+
+===== boost_pretty_printers_gdb_python_header
+```
+boost_pretty_printers_gdb_python_header(
+    TARGET target
+    INPUT input
+    OUTPUT output
+    [EXCLUDE_FROM_ALL]
+    [HEADER_GUARD header_guard]
+    [DISABLE_MACRO disable_macro])
+```
+Defines a custom target `target` that creates a C header `output` from a
+Python script `input` by running <<generate-gdb-header-py>>.
+
+If `EXCLUDE_FROM_ALL` is set the target will not be added to the default build
+target.
+
+If `HEADER_GUARD` is set `--header-guard=<header_guard>` flag will be passed to
+`generate-gdb-header.py`.
+
+If `DISABLE_MACRO` is set `--disable-macro=<disable_macro>` flag will be passed
+to `generate-gdb-header.py`.
+
+===== boost_pretty_printers_test_gdb_printers
+```
+boost_pretty_printers_test_gdb_printers(
+    TEST test
+    [PROGRAM program]
+    SOURCES src1 [srcs...]
+    [EXCLUDE_FROM_ALL])
+```
+. Defines a custom target that creates a Python program from source file `src1`
+  by running <<generate-gdb-test-runner-py>>.
+. Defines executable target `program` with the provided `SOURCES`.
+. Defines a test `test` that uses GDB as a Python interpreter for script from
+  step 1 to debug the program from step 2.
+
+If `PROGRAM` is not set then the executable target's name is assumed to be the
+same as `test`.
+
+If `EXCLUDE_FROM_ALL` is set then both the executable target and the custom
+target will not be added to the default build target.
+
+
+=== b2 module
+
+```
+using boost-pretty-printers : [path/to/gdb] ;
+```
+
+==== Rules
+
+===== has-gdb
+```
+rule has-gdb ( )
+```
+Returns a true value if GDB program was found.
+
+===== gdb-python-header
+```
+rule gdb-python-header ( target : sources + : requirements * : usage-requirements * )
+```
+Main target rule that creates a C header from a Python script by running
+<<generate-gdb-header-py>>.
+
+Usually, you would use `<location>` feature to create the file in the headers
+directory. Use the `<flags>` feature to pass additional flags to
+`generate-gdb-header.py`, for example
+`<flags>--header-guard=MYPROJECT_GDB_PRINTERS_HPP`.
+
+
+===== test-gdb-printers
+```
+rule test-gdb-printers ( target : sources + : requirements * : default-build * : usage-requirements * )
+```
+Main target rule that
+
+. creates a Python program from a source file by running
+  <<generate-gdb-test-runner-py>>;
+. compiles and links the sources into a program;
+. runs GDB as a Python interpreter for script from step 1 to debug the program
+  from step 2.
+
+Note that the file that contains comment markers for
+`generate-gdb-test-runner.py` must be the first source.
+
+[#api-direct]
 === Direct usage
 
+[#generate-gdb-header-py]
 ==== generate-gdb-header.py
+```sh
+generate-gdb-header.py input [output] [--header-guard HEADER_GUARD] [--disable-macro DISABLE_MACRO]
+```
 
+Converts a Python script into a C header that pushes that script's contents into
+`.debug_gdb_scripts` ELF section.
+
+Positional arguments:
+
+input:: Input file; according to GDB documentation Python and Scheme files are
+    supported.
+output:: Output file; if not provided, the result is printed to standard
+    output.
+
+Options:
+
+--header-guard:: Header guard macro to use; if not provided, the value is
+  deduced from the output file name; to remove the header guard macro use empty
+  value (`--header-guard=`).
+
+--disable-macro:: Macro to disable pretty printer embedding; by default
+  `BOOST_ALL_NO_EMBEDDED_GDB_SCRIPTS`; to remove the disable macro use empty
+  value (`--disable-macro=`).
+
+
+[#generate-gdb-test-runner-py]
 ==== generate-gdb-test-runner.py
+```
+generate-gdb-test-runner.py input [output]
+```
+
+Creates a Python script from a source file to control a GDB test of that source
+file. The source file has to contain special comments, for example:
+
+```cpp
+int n = 1;
+// TEST_EXPR( 'n', '1' )
+```
+
+The resulting script commands GDB to set a breakpoint on each line with a
+special comment. Then the script will test that printing the expression in the
+first argument of `TEST_EXPR` (e.g. `print n`) produces the output equal to the
+second argument of `TEST_EXPR` (e.g. `1`). Note that the breakpoint is set
+effectively on the next statement. Also note that multiline comments are not
+supported.
+
+In some cases you need to know some run-time values to know the expected
+output. In that case you can provide extra arguments to `TEST_EXPR`. Those will
+be in turn printed by GDB, and their output will be substituted into the second
+argument of `TEST_EXPR` using Python's `str.format`:
+
+```cpp
+unsigned char buf[1024];
+monotonic_resource mr(buf);
+// TEST_EXPR( 'mr', 'monotonic_resource[buffer={0}]', '/a &buf' )
+```
+
+(The option `/a` tells `print` to output just the address, without type
+information).
+
+
+Positional arguments:
+
+input:: Input file.
+output:: Output file; if not provided, the result is printed to the standard
+    output.
 
 == License
 link:LICENSE_1_0.txt[BSL-1.0]

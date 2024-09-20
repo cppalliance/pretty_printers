@@ -20,6 +20,16 @@ import re
 import sys
 import traceback
 
+class Test:
+    def __init__(self, bp, func):
+        self.breakpoint = bp
+        self.func = func
+        self.occured = False
+
+    def __call__(self):
+        self.occured = True
+        return self.func(self.breakpoint)
+
 def gdb_print(expr):
     output = gdb.execute('print %s' % expr, to_string=True)
     parts = output[:-1].split(' = ', 1)
@@ -30,7 +40,7 @@ def gdb_print(expr):
     return output
 
 def TEST_EXPR(expr, pattern, *args, **kwargs):
-    def test():
+    def test(bp):
         if args or kwargs:
             actual_args = [gdb_print(arg) for arg in args]
             actual_kwargs = dict([
@@ -54,23 +64,42 @@ def TEST_EXPR(expr, pattern, *args, **kwargs):
     return test
 
 _return_code = 0
-_tests_to_run = []
+_tests = dict()
+_done = False
 try:
     assert gdb.objfiles()
 
 '''
 
 _breakpoint = '''\
-    _tests_to_run.append(
-        (gdb.Breakpoint('{input}:{line}', internal=True), {text}))
+    bp = gdb.Breakpoint('{input}:{line}', internal=True)
+    _tests[bp] = Test(bp, {text})
 '''
 
 _bottom = '''\
     gdb.execute('start', to_string=True)
-    for bp, test in _tests_to_run:
-        gdb.execute('continue', to_string=True)
-        test()
-    gdb.execute('continue', to_string=True)
+    program = gdb.selected_inferior()
+
+    def on_exit(ev):
+        if not ev.inferior == program:
+            return
+        _return_code = ev.exit_code
+
+        global _done
+        _done = True
+    gdb.events.exited.connect(on_exit)
+
+    def on_stop(ev):
+        if not isinstance(ev, gdb.BreakpointEvent):
+            return
+        _tests.get(ev.breakpoint)()
+    gdb.events.stop.connect(on_stop)
+
+    while True:
+        gdb.execute('continue')
+        if _done:
+            break
+
 except BaseException:
     traceback.print_exc()
     gdb.execute('disable breakpoints')

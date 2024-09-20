@@ -1,1 +1,3 @@
 /build
+/test/include/testlib/gdb.hpp
+__pycache__

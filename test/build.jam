@@ -5,6 +5,31 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-import boost-pretty-printers : gdb-python-header : gdb-header ;
+import boost-pretty-printers : * ;
+import param ;
+import testing ;
 
-gdb-header gdb.hpp : gdb.py ;
+
+rule python-test ( sources + : args * : input-files * : requirements *
+    : target ? )
+{
+    param.handle-named-params sources args input-files requirements target ;
+    requirements += <testing.arg>$(args:J=" ") ;
+    requirements += [ testing.handle-input-files $(input-files) ] ;
+    return [ testing.make-test run-pyd
+        : $(sources) : $(requirements) : $(target) ] ;
+}
+
+python-test test-generate-gdb-header.py : : ../generate-gdb-header.py gdb.py ;
+
+
+gdb-python-header gdb.hpp : gdb.py : <location>include/testlib ;
+
+lib testlib
+    : testlib.cpp
+    : <include>include
+      <dependency>gdb.hpp
+    : usage-requirements <include>include
+    ;
+
+test-gdb-printers test_gdb : gdb.cpp testlib ;

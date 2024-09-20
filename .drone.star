@@ -10,8 +10,8 @@ linuxglobalimage="cppalliance/droneubuntu1804:1"
 
 def main(ctx):
   return [
-    linux_cxx("B2", "g++", packages="g++-13 gdb", buildscript="drone", buildtype="b2", image=linuxglobalimage),
-    linux_cxx("CMake", "g++", packages="g++-13 gdb", buildtype="cmake", buildscript="drone", image=linuxglobalimage),
+    linux_cxx("B2", "g++", packages="gdb", buildscript="drone", buildtype="b2", image=linuxglobalimage),
+    linux_cxx("CMake", "g++", packages="gdb", buildtype="cmake", buildscript="drone", image=linuxglobalimage),
   ]
 
 # from https://github.com/boostorg/boost-ci

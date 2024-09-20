@@ -11,4 +11,5 @@ project(BoostPrettyPrinters VERSION 1.0 LANGUAGES CXX)
 
 find_package(BoostPrettyPrinters)
 
+include(CTest)
 add_subdirectory(test)

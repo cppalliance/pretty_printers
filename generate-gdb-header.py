@@ -102,10 +102,13 @@ def write_back_matter(header, header_guard, disable_macro):
 def main(args, stdin, stdout):
     args = parse_args(args)
 
+    not_alphanumeric = re.compile('[^\\w\\d]+')
+
     header_guard = args.header_guard
     if header_guard is None:
         if args.output:
-            header_guard = os.path.basename(args.output).upper()
+            header_guard = not_alphanumeric.sub(
+                '_', os.path.basename(args.output).upper())
 
     if args.output:
         header = open(args.output, 'w', encoding='utf-8')
@@ -128,7 +131,7 @@ def main(args, stdin, stdout):
                     if line.startswith('#!'): # shebang
                         continue
                     elif line.startswith('#'):
-                        header.write('// ')
+                        header.write('//')
                         header.write(line[1:])
                         continue
                     else:

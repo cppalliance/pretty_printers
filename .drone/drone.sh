@@ -29,7 +29,9 @@ b2_job () {
 
     echo '==================================> SCRIPT'
 
-    echo "using python : : python3 ;" > project-config.jam
+    echo "using gcc ;" > project-config.jam
+    echo "using python : : python3 ;" >> project-config.jam
+    echo "project : build-dir build ;" >> project-config.jam
 
     export B2_TARGETS=${B2_TARGETS:-"test"}
     b2 ${B2_TARGETS} variant=debug warnings=extra warnings-as-errors=on ${B2_FLAGS}
@@ -37,11 +39,12 @@ b2_job () {
 
 cmake_variation () {
     : ${variation_link:-static}
-    build_dir=__build_${variation_link}
-    mkdir ${build_dir}
+    build_dir=build/${variation_link}
+    mkdir -p ${build_dir}
     pushd ${build_dir}
 
-    cmake -DBUILD_TESTING=ON -DCMAKE_MODULE_PATH=$PWD/.. ${CMAKE_OPTIONS} ..
+    cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON \
+        -DCMAKE_MODULE_PATH=$PWD/../.. ${CMAKE_OPTIONS} ../..
     cmake --build . --target tests
     ctest --output-on-failure
     popd

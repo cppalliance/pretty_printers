@@ -109,6 +109,14 @@ except BaseException:
         pass
     _return_code = 1
 
+for test in _tests.values():
+    if not test.occured:
+        print(
+            '{0}: error: condition was never tested'.format(
+                test.breakpoint.location),
+            file=sys.stderr)
+        _return_code = 1
+
 gdb.execute('quit %s' % _return_code)
 '''
 

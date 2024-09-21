@@ -77,6 +77,10 @@ _breakpoint = '''\
 '''
 
 _bottom = '''\
+    if not _tests:
+        print('error: nothing to test', file=sys.stderr)
+        gdb.execute('quit 1')
+
     gdb.execute('start', to_string=True)
     program = gdb.selected_inferior()
 
@@ -140,10 +144,11 @@ def parse_args(args):
             'test of that source file'))
     parser.add_argument(
         'input',
-        help='Input file')
+        nargs='+',
+        help='Input files')
     parser.add_argument(
-        'output',
-        nargs='?',
+        '-o',
+        '--output',
         help='Output file; STDOUT by default')
     return parser.parse_args(args[1:])
 
@@ -159,17 +164,18 @@ def main(args, stdin, stdout):
 
     test_line = re.compile(r'^\s*//\s*TEST_', re.U)
 
-    with open(args.input, 'r', encoding='utf-8') as input:
-        with output_ctx:
-            output.write(_top)
-            for n, line in enumerate(input, start=1):
-                match = test_line.search(line)
-                if not match:
-                    continue
-                line = line.strip()[2:].lstrip()
-                output.write(
-                    _breakpoint.format(input=args.input, line=n, text=line))
-            output.write(_bottom)
+    with output_ctx:
+        output.write(_top)
+        for src in args.input:
+            with open(src, 'r', encoding='utf-8') as input:
+                for n, line in enumerate(input, start=1):
+                    match = test_line.search(line)
+                    if not match:
+                        continue
+                    line = line.strip()[2:].lstrip()
+                    output.write(
+                        _breakpoint.format(input=src, line=n, text=line))
+        output.write(_bottom)
 
 
 if __name__ == '__main__':

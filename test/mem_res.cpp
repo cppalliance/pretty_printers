@@ -7,15 +7,10 @@
 
 #include <testlib/all.hpp>
 
-#include <cstdlib>
-
-void test_kvpair();
-void test_memory_res();
-
-int main()
+void test_memory_res()
 {
-    test_memory_res();
-    test_kvpair();
-    test_kvpair();
-    return EXIT_SUCCESS;
+    unsigned char b[1024];
+    testlib::memory_resource mr(b);
+    // TEST_EXPR( 'mr', 'memory_resource[buffer={}, size=1024]', '/a &b' )
+    (void)mr;
 }

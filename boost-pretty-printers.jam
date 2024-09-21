@@ -14,9 +14,12 @@ import param ;
 import path ;
 import project ;
 import property ;
+import property-set ;
 import python ;
 import testing ;
 import toolset ;
+import type ;
+import "class" : new ;
 
 
 rule init ( command * )
@@ -79,10 +82,10 @@ rule test-gdb-printers ( target : sources + : requirements * : default-build *
     local project = [ project.current ] ;
 
     local test-runner = _$(target:S=.py) ;
-    make $(test-runner)
-        : $(sources[1])
-        : @boost-pretty-printers.generate-gdb-test-runner
-        : <dependency>$(.gdb-test-generator-script)
+    generate $(test-runner)
+        : $(sources)
+        : <generating-rule>@boost-pretty-printers.generate-gdb-test-runner-aux
+          <dependency>$(.gdb-test-generator-script)
         ;
     $(project).mark-target-as-explicit $(test-runner) ;
 
@@ -128,6 +131,35 @@ actions generate-gdb-header
 toolset.flags boost-pretty-printers.generate-gdb-header FLAGS <flags> ;
 toolset.flags boost-pretty-printers.generate-gdb-header PYTHON <python.interpreter> ;
 
+rule generate-gdb-test-runner-aux ( project name : property-set : sources + )
+{
+    local cpp-sources ;
+    for local src in $(sources)
+    {
+        if [ $(src).type ] in C CPP H HPP IPP
+        {
+            cpp-sources += $(src) ;
+        }
+    }
+
+    local action-name = boost-pretty-printers.generate-gdb-test-runner ;
+    local relevant = [ toolset.relevant $(action-name) ] ;
+    local reqs = [ $(property-set).relevant $(relevant) ] ;
+    reqs = [ $(reqs).add-raw [ $(property-set).dependency ] ] ;
+    local action = [
+          new action $(cpp-sources)
+        : $(action-name)
+        : $(reqs)
+        ] ;
+    local target = [
+          new file-target $(name) exact
+        : [ type.type $(name) ]
+        : $(project)
+        : $(action)
+        ] ;
+    return [ property-set.empty ] $(target) ;
+}
+
 rule generate-gdb-test-runner ( target : sources + : properties * )
 {
     warn-if-not-configuered ;
@@ -135,7 +167,7 @@ rule generate-gdb-test-runner ( target : sources + : properties * )
 }
 actions generate-gdb-test-runner
 {
-    "$(PYTHON:E=python)" "$(RUNNER)" $(>[1]) $(<)
+    "$(PYTHON:E=python)" "$(RUNNER)" $(>) -o $(<)
 }
 toolset.flags boost-pretty-printers.generate-gdb-test-runner PYTHON <python.interpreter> ;
 

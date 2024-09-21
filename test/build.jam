@@ -26,10 +26,10 @@ python-test test-generate-gdb-header.py : : ../generate-gdb-header.py gdb.py ;
 gdb-python-header gdb.hpp : gdb.py : <location>include/testlib ;
 
 lib testlib
-    : testlib.cpp
+    : lib/testlib.cpp
     : <include>include
       <dependency>gdb.hpp
     : usage-requirements <include>include
     ;
 
-test-gdb-printers test_gdb : gdb.cpp testlib ;
+test-gdb-printers test_gdb : [ glob *.cpp ] testlib ;

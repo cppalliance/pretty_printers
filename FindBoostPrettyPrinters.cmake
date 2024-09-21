@@ -87,15 +87,22 @@ function(boost_pretty_printers_test_gdb_printers)
         set(includeInAll ALL)
     endif()
 
-    LIST(GET BOOST_PPRINT_TEST_GDB_SOURCES 0 source0)
+
+    set(sources)
+    foreach(src ${BOOST_PPRINT_TEST_GDB_SOURCES})
+        get_filename_component(
+            real_src "${src}" ABSOLUTE ${CMAKE_CURRENT_SOURCE_DIR})
+        LIST(APPEND sources "${real_src}")
+    endforeach()
+
     add_custom_command(
         OUTPUT "${BOOST_PPRINT_TEST_GDB_TEST}.py"
-        DEPENDS "${source0}"
+        DEPENDS ${sources}
         COMMAND
             "${Python3_EXECUTABLE}"
             "${BoostPrettyPrinters_GDB_TEST_SCRIPT}"
-            "${CMAKE_CURRENT_SOURCE_DIR}/${source0}"
-            "${BOOST_PPRINT_TEST_GDB_TEST}.py"
+            ${sources}
+            -o "${BOOST_PPRINT_TEST_GDB_TEST}.py"
         COMMENT "Generating ${source0}")
 
     add_custom_target(${BOOST_PPRINT_TEST_GDB_TEST}_runner

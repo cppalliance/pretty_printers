@@ -7,15 +7,9 @@
 
 #include <testlib/all.hpp>
 
-#include <cstdlib>
-
-void test_kvpair();
-void test_memory_res();
-
-int main()
+void test_kvpair()
 {
-    test_memory_res();
-    test_kvpair();
-    test_kvpair();
-    return EXIT_SUCCESS;
+    testlib::key_value_pair kv{"foo", 12};
+    // TEST_EXPR( 'kv', 'key_value_pair["foo" = 12]' )
+    (void)kv;
 }

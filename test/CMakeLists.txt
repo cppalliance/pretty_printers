@@ -5,14 +5,14 @@ endif()
 add_custom_target(tests)
 
 add_test(
-    NAME test-generate-gdb-header.py
+    NAME test-embed-gdb-extension.py
     COMMAND "${Python3_EXECUTABLE}"
-    ${CMAKE_CURRENT_SOURCE_DIR}/test-generate-gdb-header.py
-    ${CMAKE_CURRENT_SOURCE_DIR}/../generate-gdb-header.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-embed-gdb-extension.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/../embed-gdb-extension.py
     ${CMAKE_CURRENT_SOURCE_DIR}/gdb.py)
 
 
-boost_pretty_printers_gdb_python_header(
+boost_pretty_printers_embed_gdb_extension(
     TARGET generate-gdb-hpp
     INPUT gdb.py
     OUTPUT include/testlib/gdb.hpp

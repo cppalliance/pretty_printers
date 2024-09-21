@@ -16,13 +16,13 @@ find_package_handle_standard_args(BoostPrettyPrinters
 find_program(BoostPrettyPrinters_GDB gdb DOC "GDB executable tos use")
 set(BoostPrettyPrinters_HAS_GDB "${BoostPrettyPrinters_GDB}")
 
-set(BoostPrettyPrinters_GDB_HEADER_SCRIPT
-    "${CMAKE_CURRENT_LIST_DIR}/generate-gdb-header.py")
+set(BoostPrettyPrinters_GDB_EMBED_SCRIPT
+    "${CMAKE_CURRENT_LIST_DIR}/embed-gdb-extension.py")
 set(BoostPrettyPrinters_GDB_TEST_SCRIPT
     "${CMAKE_CURRENT_LIST_DIR}/generate-gdb-test-runner.py")
 set(BoostPrettyPrinters_INCLUDES "${CMAKE_CURRENT_LIST_DIR}/include")
 
-function(boost_pretty_printers_gdb_python_header)
+function(boost_pretty_printers_embed_gdb_extension)
     set(options EXCLUDE_FROM_ALL)
     set(oneValueArgs TARGET INPUT OUTPUT HEADER_GUARD DISABLE_MACRO)
     set(multiValueArgs)
@@ -31,7 +31,7 @@ function(boost_pretty_printers_gdb_python_header)
     foreach(kw TARGET INPUT OUTPUT)
         if(NOT DEFINED "BOOST_PPRINT_GDB_GEN_${kw}")
             message(FATAL_ERROR "Argument ${kw} is required for function \
-                boost_pretty_printers_gdb_python_header.")
+                boost_pretty_printers_embed_gdb_extension.")
         endif()
     endforeach()
 
@@ -46,10 +46,10 @@ function(boost_pretty_printers_gdb_python_header)
     add_custom_command(
         OUTPUT "${BOOST_PPRINT_GDB_GEN_OUTPUT}"
         MAIN_DEPENDENCY "${BOOST_PPRINT_GDB_GEN_INPUT}"
-        DEPENDS "${BoostPrettyPrinters_GDB_HEADER_SCRIPT}"
+        DEPENDS "${BoostPrettyPrinters_GDB_EMBED_SCRIPT}"
         COMMAND
             "${Python3_EXECUTABLE}"
-            "${BoostPrettyPrinters_GDB_HEADER_SCRIPT}"
+            "${BoostPrettyPrinters_GDB_EMBED_SCRIPT}"
             "${CMAKE_CURRENT_SOURCE_DIR}/${BOOST_PPRINT_GDB_GEN_INPUT}"
             "${CMAKE_CURRENT_SOURCE_DIR}/${BOOST_PPRINT_GDB_GEN_OUTPUT}"
             ${BOOST_PPRINT_GDB_GEN_HEADER_GUARD}

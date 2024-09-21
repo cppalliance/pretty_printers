@@ -59,8 +59,8 @@ def parse_args(args):
     parser = argparse.ArgumentParser(
         prog=args[0],
         description=(
-            'Converts a Python script into a C header '
-            'that pushes that script into .debug_gdb_scripts ELF section'))
+            'Create a C file that pushes contents of a GDB Python extension '
+            'file into .debug_gdb_scripts ELF section.'))
     parser.add_argument(
         'input',
         help='Input file')

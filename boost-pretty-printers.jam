@@ -59,16 +59,16 @@ rule has-gdb
     return $(.has-gdb) ;
 }
 
-rule gdb-python-header ( target : sources + : requirements *
+rule embed-gdb-extension ( target : sources + : requirements *
     : usage-requirements * )
 {
     param.handle-named-params sources requirements usage-requirements ;
 
     make $(target)
         : $(sources)
-        : @boost-pretty-printers.generate-gdb-header
+        : @boost-pretty-printers.run-embed-gdb-extension
         : $(requirements)
-          <dependency>$(.gdb-header-script)
+          <dependency>$(.gdb-embed-script)
         : $(usage-requirements)
         ;
 }
@@ -116,20 +116,20 @@ rule test-gdb-printers ( target : sources + : requirements * : default-build *
 
 .here  = [ path.make [ modules.binding $(__name__) ] ] ;
 .here = $(.here:D) ;
-.gdb-header-script = $(.here)/generate-gdb-header.py ;
+.gdb-embed-script = $(.here)/embed-gdb-extension.py ;
 .gdb-test-generator-script = $(.here)/generate-gdb-test-runner.py ;
 
-rule generate-gdb-header ( target : sources + : properties * )
+rule run-embed-gdb-extension ( target : sources + : properties * )
 {
     warn-if-not-configuered ;
-    RUNNER on $(target) = [ path.native $(.gdb-header-script) ] ;
+    RUNNER on $(target) = [ path.native $(.gdb-embed-script) ] ;
 }
-actions generate-gdb-header
+actions run-embed-gdb-extension
 {
     "$(PYTHON:E=python)" "$(RUNNER)" $(>[1]) $(<) $(FLAGS)
 }
-toolset.flags boost-pretty-printers.generate-gdb-header FLAGS <flags> ;
-toolset.flags boost-pretty-printers.generate-gdb-header PYTHON <python.interpreter> ;
+toolset.flags boost-pretty-printers.run-embed-gdb-extension FLAGS <flags> ;
+toolset.flags boost-pretty-printers.run-embed-gdb-extension PYTHON <python.interpreter> ;
 
 rule generate-gdb-test-runner-aux ( project name : property-set : sources + )
 {

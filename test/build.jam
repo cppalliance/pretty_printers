@@ -20,10 +20,12 @@ rule python-test ( sources + : args * : input-files * : requirements *
         : $(sources) : $(requirements) : $(target) ] ;
 }
 
-python-test test-generate-gdb-header.py : : ../generate-gdb-header.py gdb.py ;
+python-test test-embed-gdb-extension.py
+    : input-files ../embed-gdb-extension.py gdb.py
+    ;
 
 
-gdb-python-header gdb.hpp : gdb.py : <location>include/testlib ;
+embed-gdb-extension gdb.hpp : gdb.py : <location>include/testlib ;
 
 lib testlib
     : lib/testlib.cpp

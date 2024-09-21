@@ -10,10 +10,10 @@ WARNING: Not an official Boost tool yet!
 
 The core of this project is a couple of utility Python scripts.
 
-* <<generate-gdb-header-py>> takes a Python module that defines a set of GDB
-  pretty printers and creates a C header that pushes the contents of that
-  script into a special binary section, so that GDB could automatically load
-  those pretty printers during debugging.
+* <<embed-gdb-extension-py>> takes a Python GDB extension module (the most
+  common such extesnsion is a set of pretty printers) and produces C code that
+  pushes the contents of that module into a special binary section, so that
+  GDB could automatically load those pretty printers during debugging.
 
 * <<generate-gdb-test-runner-py>> takes a source file that has special comment
   lines and creates a Python program that sets breakpoints on those lines to
@@ -36,7 +36,7 @@ in the API section.
 # CMakeLists.txt
 find_package(BoostPrettyPrinters)
 if(BoostPrettyPrinters_FOUND)
-    boost_pretty_printers_gdb_python_header(
+    boost_pretty_printers_embed_gdb_extension(
         TARGET regenerate_printers
         INPUT gdb_printers.py
         OUTPUT include/myproject/gdb_printers.hpp
@@ -106,9 +106,9 @@ BoostPrettyPrinters_GDB:: The GDB executable to use.
 
 ==== Functions
 
-===== boost_pretty_printers_gdb_python_header
+===== boost_pretty_printers_embed_gdb_extension
 ```
-boost_pretty_printers_gdb_python_header(
+boost_pretty_printers_embed_gdb_extension(
     TARGET target
     INPUT input
     OUTPUT output
@@ -116,17 +116,17 @@ boost_pretty_printers_gdb_python_header(
     [HEADER_GUARD header_guard]
     [DISABLE_MACRO disable_macro])
 ```
-Defines a custom target `target` that creates a C header `output` from a
-Python script `input` by running <<generate-gdb-header-py>>.
+Defines a custom target `target` that creates a C file `output` from a Python
+script `input` by running <<embed-gdb-extension-py>>.
 
 If `EXCLUDE_FROM_ALL` is set the target will not be added to the default build
 target.
 
 If `HEADER_GUARD` is set `--header-guard=<header_guard>` flag will be passed to
-`generate-gdb-header.py`.
+`embed-gdb-extension.py`.
 
 If `DISABLE_MACRO` is set `--disable-macro=<disable_macro>` flag will be passed
-to `generate-gdb-header.py`.
+to `embed-gdb-extension.py`.
 
 ===== boost_pretty_printers_test_gdb_printers
 ```
@@ -163,16 +163,16 @@ rule has-gdb ( )
 ```
 Returns a true value if GDB program was found.
 
-===== gdb-python-header
+===== embed-gdb-extension
 ```
-rule gdb-python-header ( target : sources + : requirements * : usage-requirements * )
+rule embed-gdb-extension ( target : sources + : requirements * : usage-requirements * )
 ```
-Main target rule that creates a C header from a Python script by running
-<<generate-gdb-header-py>>.
+Main target rule that creates a C file from a Python script by running
+<<embed-gdb-extension-py>>.
 
 Usually, you would use `<location>` feature to create the file in the headers
 directory. Use the `<flags>` feature to pass additional flags to
-`generate-gdb-header.py`, for example
+`embed-gdb-extension.py`, for example
 `<flags>--header-guard=MYPROJECT_GDB_PRINTERS_HPP`.
 
 
@@ -194,19 +194,18 @@ Note that the file that contains comment markers for
 [#api-direct]
 === Direct usage
 
-[#generate-gdb-header-py]
-==== generate-gdb-header.py
+[#embed-gdb-extension-py]
+==== embed-gdb-extension.py
 ```sh
-generate-gdb-header.py input [output] [--header-guard HEADER_GUARD] [--disable-macro DISABLE_MACRO]
+embed-gdb-extension.py input [output] [--header-guard HEADER_GUARD] [--disable-macro DISABLE_MACRO]
 ```
 
-Converts a Python script into a C header that pushes that script's contents into
-`.debug_gdb_scripts` ELF section.
+Creates a C file that pushes contents of a GDB Python extension file
+into .debug_gdb_scripts ELF section.
 
 Positional arguments:
 
-input:: Input file; according to GDB documentation Python and Scheme files are
-    supported.
+input:: Input file; must be written in Python.
 output:: Output file; if not provided, the result is printed to standard
     output.
 

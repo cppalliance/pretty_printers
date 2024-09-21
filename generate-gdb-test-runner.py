@@ -140,8 +140,8 @@ def parse_args(args):
     parser = argparse.ArgumentParser(
         prog=args[0],
         description=(
-            'Creates a Python script from C++ source file to control a GDB '
-            'test of that source file'))
+            'Creates a Python script from C++ source files to control a GDB '
+            'test of those source files.'))
     parser.add_argument(
         'input',
         nargs='+',

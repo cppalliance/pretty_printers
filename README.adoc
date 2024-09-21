@@ -15,9 +15,9 @@ The core of this project is a couple of utility Python scripts.
   pushes the contents of that module into a special binary section, so that
   GDB could automatically load those pretty printers during debugging.
 
-* <<generate-gdb-test-runner-py>> takes a source file that has special comment
-  lines and creates a Python program that sets breakpoints on those lines to
-  check if printed expressions produce the desired output.
+* <<generate-gdb-test-runner-py>> takes C or C++ source files that have special
+  comment lines and creates a Python program that sets breakpoints on those
+  lines to check if printed expressions produce the desired output.
 
 
 == Install
@@ -133,12 +133,12 @@ to `embed-gdb-extension.py`.
 boost_pretty_printers_test_gdb_printers(
     TEST test
     [PROGRAM program]
-    SOURCES src1 [srcs...]
+    SOURCES [srcs...]
     [EXCLUDE_FROM_ALL])
 ```
-. Defines a custom target that creates a Python program from source file `src1`
-  by running <<generate-gdb-test-runner-py>>.
-. Defines executable target `program` with the provided `SOURCES`.
+. Defines a custom target that creates a Python program from `srcs` by
+  running <<generate-gdb-test-runner-py>>.
+. Defines executable target `program` with the provided `srcs`.
 . Defines a test `test` that uses GDB as a Python interpreter for script from
   step 1 to debug the program from step 2.
 
@@ -182,14 +182,10 @@ rule test-gdb-printers ( target : sources + : requirements * : default-build * :
 ```
 Main target rule that
 
-. creates a Python program from a source file by running
-  <<generate-gdb-test-runner-py>>;
+. creates a Python program sources by running <<generate-gdb-test-runner-py>>;
 . compiles and links the sources into a program;
 . runs GDB as a Python interpreter for script from step 1 to debug the program
   from step 2.
-
-Note that the file that contains comment markers for
-`generate-gdb-test-runner.py` must be the first source.
 
 [#api-direct]
 === Direct usage
@@ -226,8 +222,8 @@ Options:
 generate-gdb-test-runner.py input [output]
 ```
 
-Creates a Python script from a source file to control a GDB test of that source
-file. The source file has to contain special comments, for example:
+Creates a Python script from C++ source files to control a GDB test of those
+source files.
 
 ```cpp
 int n = 1;
@@ -258,7 +254,7 @@ information).
 
 Positional arguments:
 
-input:: Input file.
+input:: Input files.
 output:: Output file; if not provided, the result is printed to the standard
     output.
 

@@ -45,7 +45,7 @@ function(boost_pretty_printers_embed_gdb_extension)
             "${CMAKE_CURRENT_SOURCE_DIR}/${BOOST_PPRINT_GDB_GEN_INPUT}"
             "${CMAKE_CURRENT_SOURCE_DIR}/${BOOST_PPRINT_GDB_GEN_OUTPUT}"
             ${BOOST_PPRINT_GDB_GEN_FLAGS}
-        COMMENT "Regenerating ${BOOST_PPRINT_GDB_GEN_OUTPUT}")
+        COMMENT "Generating ${BOOST_PPRINT_GDB_GEN_OUTPUT}")
 
     if(NOT BOOST_PPRINT_GDB_GEN_EXCLUDE_FROM_ALL)
         set(isInAll ALL)
@@ -94,7 +94,7 @@ function(boost_pretty_printers_test_gdb_printers)
             "${BoostPrettyPrinters_GDB_TEST_SCRIPT}"
             ${sources}
             -o "${BOOST_PPRINT_TEST_GDB_TEST}.py"
-        COMMENT "Generating ${source0}")
+        COMMENT "Generating ${BOOST_PPRINT_TEST_GDB_TEST}.py")
 
     add_custom_target(${BOOST_PPRINT_TEST_GDB_TEST}_runner
         ${includeInAll}

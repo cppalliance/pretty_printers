@@ -35,3 +35,7 @@ lib testlib
     ;
 
 test-gdb-printers test_gdb : [ glob *.cpp ] testlib ;
+if ! [ boost-pretty-printers.has-gdb ]
+{
+    explicit test_gdb ;
+}

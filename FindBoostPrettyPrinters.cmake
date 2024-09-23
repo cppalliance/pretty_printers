@@ -7,20 +7,34 @@
 # Official repository: https://github.com/cppalliance/pretty_printers
 #
 
-find_package(Python3 QUIET COMPONENTS Interpreter)
+if(BoostPrettyPrinters_FIND_QUIETLY)
+    set(quiet QUIET)
+endif()
+find_package(Python3 ${quiet} COMPONENTS Interpreter)
+
+find_program(
+    BoostPrettyPrinters_GDB_EXECUTABLE gdb DOC "GDB executable to use")
+if(BoostPrettyPrinters_GDB_EXECUTABLE)
+    set(BoostPrettyPrinters_GDB_FOUND TRUE)
+else()
+    set(BoostPrettyPrinters_GDB_FOUND ${BoostPrettyPrinters_GDB_EXECUTABLE})
+endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(BoostPrettyPrinters
-    REQUIRED_VARS Python3_Interpreter_FOUND)
+    REQUIRED_VARS Python3_Interpreter_FOUND
+    HANDLE_COMPONENTS)
 
-find_program(BoostPrettyPrinters_GDB gdb DOC "GDB executable tos use")
-set(BoostPrettyPrinters_HAS_GDB "${BoostPrettyPrinters_GDB}")
+if(BoostPrettyPrinters_GDB_FOUND)
+    add_executable(BoostPrettyPrinters::GDB IMPORTED)
+    set_target_properties(BoostPrettyPrinters::GDB
+        PROPERTIES IMPORTED_LOCATION "${BoostPrettyPrinters_GDB_EXECUTABLE}")
+endif()
 
 set(BoostPrettyPrinters_GDB_EMBED_SCRIPT
     "${CMAKE_CURRENT_LIST_DIR}/embed-gdb-extension.py")
 set(BoostPrettyPrinters_GDB_TEST_SCRIPT
     "${CMAKE_CURRENT_LIST_DIR}/generate-gdb-test-runner.py")
-set(BoostPrettyPrinters_INCLUDES "${CMAKE_CURRENT_LIST_DIR}/include")
 
 function(boost_pretty_printers_embed_gdb_extension)
     set(options EXCLUDE_FROM_ALL)
@@ -109,7 +123,7 @@ function(boost_pretty_printers_test_gdb_printers)
 
     add_test(
         NAME ${BOOST_PPRINT_TEST_GDB_TEST}
-        COMMAND "${BoostPrettyPrinters_GDB}"
+        COMMAND BoostPrettyPrinters::GDB
             --batch-silent
             -x "${BOOST_PPRINT_TEST_GDB_TEST}.py"
             $<TARGET_FILE:${BOOST_PPRINT_TEST_GDB_PROGRAM}>)

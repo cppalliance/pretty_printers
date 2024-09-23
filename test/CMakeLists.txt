@@ -22,9 +22,11 @@ add_library(testlib lib/testlib.cpp)
 target_include_directories(testlib PUBLIC include)
 add_dependencies(testlib generate-gdb-hpp)
 
-FILE(GLOB gdb_test_srcs CONFIGURE_DEPENDS *.cpp)
-boost_pretty_printers_test_gdb_printers(
-    TEST test_gdb
-    SOURCES ${gdb_test_srcs})
-target_link_libraries(test_gdb PRIVATE testlib)
-add_dependencies(tests test_gdb)
+if(BoostPrettyPrinters_GDB_FOUND)
+    FILE(GLOB gdb_test_srcs CONFIGURE_DEPENDS *.cpp)
+    boost_pretty_printers_test_gdb_printers(
+        TEST test_gdb
+        SOURCES ${gdb_test_srcs})
+    target_link_libraries(test_gdb PRIVATE testlib)
+    add_dependencies(tests test_gdb)
+endif()

@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.8...3.16)
 
 project(BoostPrettyPrinters VERSION 1.0 LANGUAGES CXX)
 
-find_package(BoostPrettyPrinters)
+find_package(BoostPrettyPrinters REQUIRED OPTIONAL_COMPONENTS GDB)
 
 include(CTest)
 add_subdirectory(test)

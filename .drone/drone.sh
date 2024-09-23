@@ -32,19 +32,25 @@ b2_job () {
     echo "using python : : python3 ;" >> project-config.jam
     echo "project : build-dir build ;" >> project-config.jam
 
-    export B2_TARGETS=${B2_TARGETS:-"test"}
+    export B2_TARGETS=${B2_TARGETS:-"test example"}
     b2 ${B2_TARGETS} variant=debug warnings=extra warnings-as-errors=on ${B2_FLAGS}
 }
 
 cmake_variation () {
     : ${variation_link:-static}
+    : ${target:-tests}
     build_dir=build/${variation_link}
     mkdir -p ${build_dir}
     pushd ${build_dir}
 
-    cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON \
-        -DCMAKE_MODULE_PATH=$PWD/../.. ${CMAKE_OPTIONS} ../..
-    cmake --build . --target tests
+    BUILD_SHARED_LIBS=
+    if [ "$variation_link" == "shared" ]; then
+        BUILD_SHARED_LIBS="-DBUILD_SHARED_LIBS=ON"
+    fi
+
+    cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON ${BUILD_SHARED_LIBS} \
+        "-DCMAKE_MODULE_PATH=$boost_pretty_printers" ${CMAKE_OPTIONS} ../..
+    cmake --build . --target "${target}"
     ctest --output-on-failure
     popd
 }
@@ -57,8 +63,12 @@ cmake_job () {
     echo '==================================> SCRIPT'
 
     export CXXFLAGS="-Wall -Wextra -Werror"
-    variation_link=static cmake_variation
-    variation_link=shared cmake_variation
+    variation_link=static boost_pretty_printers=$PWD cmake_variation
+    variation_link=shared boost_pretty_printers=$PWD cmake_variation
+
+    cd example
+    variation_link=shared boost_pretty_printers=$PWD/.. target=all cmake_variation
+    variation_link=static boost_pretty_printers=$PWD/.. target=all cmake_variation
 }
 
 if [ "$DRONE_JOB_BUILDTYPE" == "b2" ]; then

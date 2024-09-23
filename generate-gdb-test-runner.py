@@ -87,7 +87,8 @@ _bottom = '''\
     def on_exit(ev):
         if not ev.inferior == program:
             return
-        _return_code = ev.exit_code
+        if hasattr(ev, 'exit_code'):
+            _return_code = ev.exit_code
 
         global _done
         _done = True

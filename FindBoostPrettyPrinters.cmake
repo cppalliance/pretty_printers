@@ -24,8 +24,8 @@ set(BoostPrettyPrinters_INCLUDES "${CMAKE_CURRENT_LIST_DIR}/include")
 
 function(boost_pretty_printers_embed_gdb_extension)
     set(options EXCLUDE_FROM_ALL)
-    set(oneValueArgs TARGET INPUT OUTPUT HEADER_GUARD DISABLE_MACRO)
-    set(multiValueArgs)
+    set(oneValueArgs TARGET INPUT OUTPUT)
+    set(multiValueArgs FLAGS)
     cmake_parse_arguments(BOOST_PPRINT_GDB_GEN
         "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     foreach(kw TARGET INPUT OUTPUT)
@@ -35,14 +35,6 @@ function(boost_pretty_printers_embed_gdb_extension)
         endif()
     endforeach()
 
-    if(DEFINED BOOST_PPRINT_GDB_GEN_HEADER_GUARD)
-        set(BOOST_PPRINT_GDB_GEN_HEADER_GUARD
-            "--header-guard=${BOOST_PPRINT_GDB_GEN_HEADER_GUARD}")
-    endif()
-    if(DEFINED BOOST_PPRINT_GDB_GEN_DISABLE_MACRO)
-        set(BOOST_PPRINT_GDB_GEN_DISABLE_MACRO
-            "--disable-macro=${BOOST_PPRINT_GDB_GEN_DISABLE_MACRO}")
-    endif()
     add_custom_command(
         OUTPUT "${BOOST_PPRINT_GDB_GEN_OUTPUT}"
         MAIN_DEPENDENCY "${BOOST_PPRINT_GDB_GEN_INPUT}"
@@ -52,8 +44,7 @@ function(boost_pretty_printers_embed_gdb_extension)
             "${BoostPrettyPrinters_GDB_EMBED_SCRIPT}"
             "${CMAKE_CURRENT_SOURCE_DIR}/${BOOST_PPRINT_GDB_GEN_INPUT}"
             "${CMAKE_CURRENT_SOURCE_DIR}/${BOOST_PPRINT_GDB_GEN_OUTPUT}"
-            ${BOOST_PPRINT_GDB_GEN_HEADER_GUARD}
-            ${BOOST_PPRINT_GDB_GEN_DISABLE_MACRO}
+            ${BOOST_PPRINT_GDB_GEN_FLAGS}
         COMMENT "Regenerating ${BOOST_PPRINT_GDB_GEN_OUTPUT}")
 
     if(NOT BOOST_PPRINT_GDB_GEN_EXCLUDE_FROM_ALL)

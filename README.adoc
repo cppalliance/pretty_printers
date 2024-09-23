@@ -113,8 +113,7 @@ boost_pretty_printers_embed_gdb_extension(
     INPUT input
     OUTPUT output
     [EXCLUDE_FROM_ALL]
-    [HEADER_GUARD header_guard]
-    [DISABLE_MACRO disable_macro])
+    [FLAGS flags...])
 ```
 Defines a custom target `target` that creates a C file `output` from a Python
 script `input` by running <<embed-gdb-extension-py>>.
@@ -122,11 +121,8 @@ script `input` by running <<embed-gdb-extension-py>>.
 If `EXCLUDE_FROM_ALL` is set the target will not be added to the default build
 target.
 
-If `HEADER_GUARD` is set `--header-guard=<header_guard>` flag will be passed to
-`embed-gdb-extension.py`.
-
-If `DISABLE_MACRO` is set `--disable-macro=<disable_macro>` flag will be passed
-to `embed-gdb-extension.py`.
+`FLAGS` are addtional flags passed to <<embed-gdb-extension-py>>, e.g.
+`--header-guard=` or `--disable-macro=`.
 
 ===== boost_pretty_printers_test_gdb_printers
 ```

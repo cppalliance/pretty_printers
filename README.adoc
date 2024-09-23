@@ -30,6 +30,10 @@ For convenience of using the provided tools the project also provides a CMake
 module and a b2 module. For direct usage consult the <<api-direct>> subsection
 in the API section.
 
+Note, you don't have to add your build directory to GDB's autoload safe paths
+if you are using build system functions. The functions invoke GDB with the
+necessary flag to enable autoloading of extensions.
+
 === CMake
 
 ```cmake

@@ -125,6 +125,7 @@ function(boost_pretty_printers_test_gdb_printers)
         NAME ${BOOST_PPRINT_TEST_GDB_TEST}
         COMMAND BoostPrettyPrinters::GDB
             --batch-silent
+            -iex "add-auto-load-safe-path ${CMAKE_CURRENT_BINARY_DIR}"
             -x "${BOOST_PPRINT_TEST_GDB_TEST}.py"
             $<TARGET_FILE:${BOOST_PPRINT_TEST_GDB_PROGRAM}>)
 endfunction()

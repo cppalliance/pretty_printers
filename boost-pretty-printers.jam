@@ -12,6 +12,7 @@ import make ;
 import modules ;
 import param ;
 import path ;
+import print ;
 import project ;
 import property ;
 import property-set ;
@@ -90,24 +91,28 @@ rule test-gdb-printers ( target : sources + : requirements * : default-build *
     $(project).mark-target-as-explicit $(test-runner) ;
 
     local test-program = _$(target) ;
-    run $(sources)
-        : target-name $(test-program)
-        : requirements
-          <testing.launcher>$(GDB_COMMAND)
-          <testing.arg>--batch-silent
-          <testing.arg>-x
-          <testing.input-file>$(test-runner)
-          <debug-symbols>on
+    exe $(test-program)
+        : $(sources)
+        : <debug-symbols>on
           <runtime-debugging>on
           <optimization>debug
           $(requirements)
-        : default-build
-          $(default-build)
+        : $(default-build)
         ;
     $(project).mark-target-as-explicit $(test-program) ;
 
+    local test-run = _$(target)_run ;
+    testing.make-test run-pyd
+        : $(.gdb-test-runner-script)
+        : <testing.arg>"$(GDB_COMMAND)"
+          <testing.input-file>$(test-program)
+          <testing.input-file>$(test-runner)
+        : $(test-run)
+        ;
+    $(project).mark-target-as-explicit $(test-run) ;
+
     alias $(target)
-        : $(test-program)
+        : $(test-run)
         : $(requirements)
         : $(default-build)
         : $(usage-requirements)
@@ -118,6 +123,7 @@ rule test-gdb-printers ( target : sources + : requirements * : default-build *
 .here = $(.here:D) ;
 .gdb-embed-script = $(.here)/embed-gdb-extension.py ;
 .gdb-test-generator-script = $(.here)/generate-gdb-test-runner.py ;
+.gdb-test-runner-script = $(.here)/util/run-gdb-tests.py ;
 
 rule run-embed-gdb-extension ( target : sources + : properties * )
 {

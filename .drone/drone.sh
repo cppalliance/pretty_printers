@@ -12,7 +12,6 @@ export PATH=/.local/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
 common_install () {
     export SELF=`basename $DRONE_REPO`
-    printf "add-auto-load-safe-path $PWD/build\n" > ~/.gdbinit
 }
 
 b2_job () {

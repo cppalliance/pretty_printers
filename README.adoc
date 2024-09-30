@@ -1,6 +1,16 @@
 = BoostPrettyPrinters
 :toc: preamble
 
+|===
+| Branch | Drone CI
+
+| https://github.com/cppalliance/pretty_printers/tree/master[`master`]
+| image:https://drone.cpp.al/api/badges/cppalliance/pretty_printers/status.svg?ref=refs/heads/master[master builds,link=https://drone.cpp.al/cppalliance/pretty_printers]
+
+| https://github.com/cppalliance/pretty_printers/tree/develop[`develop`]
+| image:https://drone.cpp.al/api/badges/cppalliance/pretty_printers/status.svg?ref=refs/heads/develop[develop builds,link=https://drone.cpp.al/cppalliance/pretty_printers]
+|===
+
 ____
 A collection of helpers for convenient use of GDB pretty printers with
 accompanying build system modules.
